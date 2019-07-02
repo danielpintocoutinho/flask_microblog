@@ -1,0 +1,4 @@
+applications:
+- name: microblog
+  buildpacks:
+  - python_buildpack
