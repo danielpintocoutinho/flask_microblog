@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
+from app.models import User
 
 
 class LoginForm(FlaskForm):
@@ -8,3 +9,29 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign in')
+
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField('Repeat Password', validators=[DataRequired(), 
+                                                    EqualTo('password')])
+    submit = SubmitField('Register')
+
+    # Any function with the pattern validate_<field_name> is registered
+    # by the WTForms and validate the corresponding class attribute
+    # field_name.
+    def validate_username(self, username):
+        # Checking if the user is already registered
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        # Checking if the email is already registered
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Plase use a different email address.')
+
+    
